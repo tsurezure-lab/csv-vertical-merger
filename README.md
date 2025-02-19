@@ -1,146 +1,109 @@
-# CSV Vertical Merger
+# CSV Vertical Merger | CSV縦結合ツール
 
-[![ja](https://img.shields.io/badge/lang-japanese-blue.svg)](README.ja.md)
-[![en](https://img.shields.io/badge/lang-english-blue.svg)](README.md)
-
-A simple, single-file HTML application to vertically merge multiple CSV files.
-
-## Features
-
-*   **Merge multiple CSV files:** Combine multiple CSV files with different columns.
-*   **Handle different column structures:**  Automatically handles CSV files even if they have different columns. Missing values are filled with blanks.
-*   **Preview:** Preview the merged data before downloading.
-*   **Sort:** Sort the merged data by any column (ascending or descending).
-*   **File Name Column:** Adds a "file" column to indicate the original file of each row.
-*   **Drag and Drop:** Drag and drop CSV files to upload.
-*   **File List Ordering**:  Change the file merging order by dragging and dropping the files in the file list.
-*   **Error Handling:** Displays error messages for invalid files or CSV parsing errors.
-*   **Preview Row Control:** You can select to preview the "First N rows", "Last N rows" or "All rows".
-*   **Single HTML file:** No external dependencies, just a single HTML file.
-*   **Client-side processing:** No server-side processing, all merging is done in your browser.
-*   **Bilingual (English/Japanese):** UI is in both English and Japanese.
-
-## Demo
-(Add a link to a live demo if you have one, e.g., using GitHub Pages)
-
-## Usage
-
-1.  Open `CSV Vertical Merger.html` in your browser.
-2.  Drag and drop CSV files into the designated area, or click "Select Files" to upload.
-3.  (Optional) Drag and drop files in the file list to change the merging order.
-4.  Click the "Merge" button.
-5.  (Optional) Select a column and order to sort the preview.
-6.  Click "Apply Sort" or "Do Not Apply Sort" and "Save as CSV" button to download the merged CSV file.
-
-## Screenshots
-
-![Initial State](images/screenshot1.png)  
-*Initial State*
-
-![Files Uploaded](images/screenshot2.png)  
-*Files Uploaded*
-
-![After Merging](images/screenshot3.png)
-*After Merging, Preview is shown*
-
-![After Sorting](images/screenshot4.png)
-*After Sorting*
-
-![Error Example](images/screenshot5.png)
-*Example of an error message*
-
-## Requirements
-
-*   A modern web browser (Chrome, Firefox, Safari, Edge, etc.)
-
-## How it Works
-
-This application is built with HTML, CSS, and JavaScript. It uses the following:
-
-*   **HTML:** Structure of the application.
-*   **CSS:** Styling and layout.
-*   **JavaScript:** File handling, CSV parsing, merging, sorting, preview, and download.
-*    **SortableJS**: For the drag and drop file list
-*   **Google Fonts (Zen Maru Gothic):** For a modern and readable font.
-
-## Contributing
-
-Contributions are welcome! Please feel free to open issues or submit pull requests.
-
-## License
-MIT License (or your preferred license).
+<!-- 言語選択リンク -->
+[English](#english) | [日本語](#日本語)
 
 ---
-## 日本語
 
-# CSV Vertical Merger (CSV縦結合ツール)
+<!-- English Section -->
 
-複数のCSVファイルを縦方向に結合する、シンプルな単一HTMLファイルのアプリケーションです。
+<a id="english"></a>
+## CSV Vertical Merger (English)
 
-## 特徴
+This is a simple, single-file HTML application that allows you to merge multiple CSV files vertically (appending rows).  It's designed to be user-friendly and handle various CSV formats, even with differing columns.
 
-*   **複数CSVファイルの結合:** 異なる列を持つ複数のCSVファイルを結合できます。
-*   **異なる列構造に対応:** 列が異なる場合でも、すべての列を保持したまま自動的に結合します。 欠損値は空白で埋められます。
-*   **プレビュー:** ダウンロード前に結合されたデータをプレビューできます。
-*   **ソート:** 結合されたデータを任意の列でソートできます (昇順/降順)。
-*   **ファイル名列:** 各行の元のファイルを示す "file" 列を追加します。
-*   **ドラッグ＆ドロップ:** CSVファイルをドラッグ＆ドロップしてアップロードできます。
-*   **ファイルリストの並び替え:** ドラッグ＆ドロップでファイルリストの並び順を変えることで、結合順を変更できます。
-*   **エラー処理:** 無効なファイルやCSV解析エラーの場合にエラーメッセージを表示します。
-*    **プレビュー行数制御:** 「先頭からN行」「末尾からN行」「すべて」を選択してプレビュー表示を調整できます。
-*   **単一HTMLファイル:** 外部依存関係なし、単一のHTMLファイルのみ。
-*   **クライアントサイド処理:** サーバーサイド処理なし、すべての結合はブラウザ内で行われます。
-*   **バイリンガル (英語/日本語):** UIは英語と日本語の両方に対応しています。
+### Features
 
-## デモ
-(GitHub Pagesなどを使用してライブデモがある場合は、ここにリンクを追加してください)
+*   **Drag and Drop:** Easily add CSV files by dragging and dropping them onto the designated area. You can also click the drop area to select files.
+*   **File List Reordering:** Change the order in which files are merged by dragging and dropping them in the file list.
+*   **Handles Different Column Structures:**  Automatically merges CSV files even if they have different columns. Missing values are filled with blanks.
+*   **Preview:**  Preview the merged data before downloading, with options to show the first N rows, last N rows, or all rows.
+*   **Sorting:** Sort the merged data by any column (ascending or descending) before downloading.
+*   **"file" Column:**  Automatically adds a "file" column to the merged data, indicating the source file for each row.
+*   **Error Handling:** Displays error messages for invalid files or CSV parsing errors, and identifies the problematic file.
+*   **Single HTML File:**  No external dependencies, just a single, self-contained HTML file.
+*   **Client-side Processing:**  All merging and processing happens within your browser; no data is sent to a server.
+*   **Bilingual (English/Japanese):** The user interface is presented in both English and Japanese.
 
-## 使用方法
+### Usage
 
-1.  ブラウザで `CSV Vertical Merger.html` を開きます。
-2.  CSVファイルを指定された領域にドラッグ＆ドロップするか、「ファイルを選択」をクリックしてアップロードします。
-3.  (オプション) ファイルリスト内のファイルをドラッグ＆ドロップして、結合順序を変更します。
-4.  「結合」ボタンをクリックします。
-5.  (オプション) 列と順序を選択して、プレビューをソートします。
-6.  「ソートを反映」または「ソートを反映しない」ボタンと「CSV保存」ボタンをクリックして、結合されたCSVファイルをダウンロードします。
+![CSV Vertical Merger Screenshot](images/screenshot.png)
+*CSV Vertical Merger in action*
 
-## スクリーンショット
+1.  Open `CSV Vertical Merger.html` in a modern web browser (no server required).
+2.  Add CSV files using either:
+    *   **Drag and Drop:** Drag CSV files from your file explorer and drop them onto the area labeled "Drop CSV files here | または | or Select Files".
+    *   **File Selection:** Click the "Select Files | ファイルを選択" label to open a file selection dialog.
+3.  (Optional) Reorder files in the list by dragging them. This determines the order in which they will be merged.
+4.  Click the "Merge | 結合" button.
+5.  (Optional) Preview and sort the merged data:
+    *   **Preview Options:** Choose to preview "First N rows", "Last N rows", or "All rows". Enter the number of rows (N) in the input box.
+    *   **Sort:** Click on a column header in the preview to sort by that column.  Click again to reverse the sort order.  You can also use the "Sort by" and "Order" dropdowns and the "Sort" button.
+6.  Choose whether to apply the sorting to the downloaded file using the "Apply Sort | ソートを反映" / "Do Not Apply Sort | ソートを反映しない" button.
+7.  Click the "Save as CSV | CSV保存" button to download the merged CSV file.
 
-![初期状態](images/screenshot1.png)
-*初期状態*
+### Technologies Used
 
-![ファイルアップロード後](images/screenshot2.png)
-*ファイルアップロード後*
+*   HTML
+*   CSS (with Google Fonts - Zen Maru Gothic)
+*   JavaScript (using SortableJS for drag-and-drop functionality)
 
-![結合後](images/screenshot3.png)
-*結合後、プレビュー表示*
+### License
 
-![ソート後](images/screenshot4.png)
-*ソート後*
+This project is licensed under the MIT License.
 
-![エラー例](images/screenshot5.png)
-*エラーメッセージの例*
+### Author
 
-## 動作環境
-
-*   モダンなウェブブラウザ (Chrome, Firefox, Safari, Edgeなど)
-
-## 仕組み
-
-このアプリケーションは、HTML、CSS、JavaScriptで構築されています。以下のものを使用しています。
-
-*   **HTML:** アプリケーションの構造
-*   **CSS:** スタイルとレイアウト
-*   **JavaScript:** ファイル処理、CSV解析、結合、ソート、プレビュー、ダウンロード
-*   **SortableJS**: ドラッグ＆ドロップ可能なファイルリストのため
-*   **Google Fonts (Zen Maru Gothic):** モダンで読みやすいフォントのため
-
-## 貢献
-
-貢献は大歓迎です！ issueのオープンやプルリクエストの送信をお気軽にどうぞ。
-
-## ライセンス
-
-MITライセンス (またはお好みのライセンス)
+tsurezure_lab
 
 ---
+
+<!-- Japanese Section -->
+
+<a id="日本語"></a>
+## CSV Vertical Merger (日本語)
+
+これは、複数のCSVファイルを縦方向（行を追加する形）に結合できる、シンプルで単一のHTMLファイルで構成されたアプリケーションです。異なる列を持つCSVファイルでも、ユーザーフレンドリーに扱えるように設計されています。
+
+### 特徴
+
+*   **ドラッグ＆ドロップ:** CSVファイルを指定された領域にドラッグ＆ドロップすることで簡単に追加できます。 ドロップエリアをクリックしてファイルを選択することも可能です。
+*   **ファイルリストの並べ替え:** ファイルリスト内でファイルをドラッグ＆ドロップすることで、結合する順序を変更できます。
+*   **異なる列構造に対応:** 列が異なるCSVファイルでも、自動的に結合します。欠損値は空白で埋められます。
+*   **プレビュー:** ダウンロード前に結合されたデータをプレビューできます。「先頭からN行」、「末尾からN行」、または「すべて」の行を表示するオプションがあります。
+*   **ソート:** ダウンロード前に、結合されたデータを任意の列でソートできます（昇順/降順）。
+*   **"file" 列:** 各行のソースファイルを示す "file" 列が自動的に追加されます。
+*   **エラー処理:** 無効なファイルやCSV解析エラーが発生した場合、エラーメッセージを表示し、問題のあるファイルを特定します。
+*   **単一HTMLファイル:** 外部依存関係なし、単一のHTMLファイルで完結します。
+*   **クライアントサイド処理:** すべての結合と処理はブラウザ内で行われます。データがサーバーに送信されることはありません。
+*   **バイリンガル (英語/日本語):** ユーザーインターフェースは英語と日本語で表示されます。
+
+### 使用方法
+![CSV Vertical Merger スクリーンショット](images/screenshot.png)
+*CSV Vertical Mergerの動作中の様子*
+
+1.  モダンなウェブブラウザで `CSV Vertical Merger.html` を開きます (サーバーは不要です)。
+2.  CSVファイルを以下のいずれかの方法で追加します。
+    *   **ドラッグ＆ドロップ:**  CSVファイルをファイルエクスプローラーから「ここにCSVファイルをドロップ | Drop CSV files here」と書かれたエリアにドラッグ＆ドロップします。
+    *   **ファイル選択:** 「ファイルを選択 | Select Files」ラベルをクリックして、ファイル選択ダイアログを開きます。
+3.  (オプション) リスト内のファイルをドラッグして、ファイルの順序を並べ替えます。 これは、ファイルが結合される順序を決定します。
+4.  「結合 | Merge」ボタンをクリックします。
+5.  (オプション) 結合されたデータをプレビューし、ソートします。
+    *   **プレビューオプション:** 「先頭からN行」、「末尾からN行」、「すべて」のいずれかを選択してプレビューします。 行数 (N) は入力ボックスに入力します。
+    *   **ソート:** プレビュー内の列ヘッダーをクリックすると、その列でソートします。 もう一度クリックすると、ソート順が逆になります。 「ソート列」と「順序」のドロップダウンと「ソート」ボタンを使用することもできます。
+6.  「ソートを反映 | Apply Sort」/「ソートを反映しない | Do Not Apply Sort」ボタンを使って、ダウンロードするファイルにソートを適用するかどうかを選択します。
+7.  「CSV保存 | Save as CSV」ボタンをクリックして、結合されたCSVファイルをダウンロードします。
+
+### 使用技術
+
+*   HTML
+*   CSS (Google Fonts - Zen Maru Gothic を使用)
+*   JavaScript (ドラッグ＆ドロップ機能に SortableJS を使用)
+
+### ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。
+
+### 作者
+
+tsurezure_lab
