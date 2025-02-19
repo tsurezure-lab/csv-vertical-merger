@@ -27,7 +27,7 @@ This is a simple, single-file HTML application that allows you to merge multiple
 
 ### Usage
 
-![CSV Vertical Merger Screenshot](images/screenshot.png)
+![CSV Vertical Merger Screenshot](images/screencapture.png)
 *CSV Vertical Merger in action*
 
 1.  Open `CSV Vertical Merger.html` in a modern web browser (no server required).
@@ -79,7 +79,7 @@ tsurezure_lab
 *   **バイリンガル (英語/日本語):** ユーザーインターフェースは英語と日本語で表示されます。
 
 ### 使用方法
-![CSV Vertical Merger スクリーンショット](images/screenshot.png)
+![CSV Vertical Merger スクリーンショット](images/screencapture.png)
 *CSV Vertical Mergerの動作中の様子*
 
 1.  モダンなウェブブラウザで `CSV Vertical Merger.html` を開きます (サーバーは不要です)。
