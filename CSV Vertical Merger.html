@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Vertical Merger | CSV縦結合ツール</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
+  <!-- SortableJS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #87CEEB; /* パステルブルー (キーカラー) */
+      --secondary-color: #F9F4EE; /* 背景色 */
+      --text-color: #333;
+      --light-gray: #f0f0f0;
+      --error-color: #d9534f; /* エラーメッセージ用 */
+    }
+
+    body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+      width: 100%;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 1.8em;
+    }
+
+    /* ドロップエリア */
+    #drop-area {
+      border: 3px dashed var(--primary-color);
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      background-color: white;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    #drop-area.highlight {
+      background-color: var(--light-gray);
+      border-color: #6495ED; /* ホバー時のボーダー色 */
+    }
+    #drop-area.error { /* エラー時のスタイル */
+      border-color: var(--error-color);
+    }
+
+    /* ファイル選択ボタン */
+    #drop-area label {
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    #drop-area label:hover {
+        background-color: #6495ED; /* ホバー時の背景色 */
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    /* ファイルリスト */
+    .file-list {
+      margin-top: 15px;
+      margin-bottom: 15px;
+      text-align: center;
+      width: 80%; /* 幅をドロップエリアに合わせる */
+      max-width: 600px; /* 最大幅 */
+    }
+    .file-list ul {
+        list-style: none;
+        padding: 0;
+        /* SortableJS 用のスタイル */
+        display: flex;
+        flex-wrap: wrap; /* 折り返し */
+        justify-content: center; /* 中央揃え */
+    }
+    .file-list p {
+        font-weight: bold;
+    }
+
+    .file-item {
+      margin: 5px; /* ファイル項目間の余白 */
+      background-color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      /*display: inline-block;削除 */
+      cursor: grab; /* ドラッグ可能カーソル */
+      border: 1px solid #ccc;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+     .file-item:active {
+        cursor: grabbing;
+     }
+
+    /* ボタン共通スタイル */
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-weight: 600;
+      color: white;
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #6495ED; /* ホバー時の背景色 */
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* ソートオプション */
+    #sort-options {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #sort-options label {
+      margin: 0 10px;
+      display: inline-block; /* インラインブロック化 */
+      vertical-align: middle; /* 垂直方向中央揃え */
+    }
+
+    #sort-options select {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin: 0 5px;
+      vertical-align: middle; /* 垂直方向中央揃え */
+    }
+     /* ダウンロードオプション */
+     #download-options{
+        text-align: center;
+     }
+
+    /* プレビューコンテナ */
+     #preview-container {
+      margin-top: 20px;
+      margin-bottom: 40px;
+      overflow-x: auto;
+      width: 95%; /* ウィンドウ幅の95% */
+      /* max-width: 800px;  必要に応じてコメントアウトを外す */
+      background-color: white;
+      border-radius: 15px;
+      padding: 15px;
+      box-sizing: border-box; /* 重要 */
+    }
+     #preview-container h2{
+        text-align: center;
+     }
+
+    #preview-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    #preview-table th, #preview-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    #preview-table th {
+      background-color: var(--light-gray);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    #preview-table th:hover{
+        background-color: #ddd;
+    }
+
+    .omitted-row {
+      text-align: center;
+      font-style: italic;
+      color: #888;
+    }
+
+    .hidden {
+      display: none;
+    }
+     /*プレビュー行数指定*/
+    #preview-options {
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    #preview-options label {
+        margin-right: 5px;
+    }
+    #preview-options select, #preview-options input[type="number"] {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        margin-right: 10px; /* select と input の間隔 */
+    }
+
+    /* フッターのスタイル */
+     footer {
+      width: 100%; /* bodyの幅に合わせる */
+      text-align: center;
+      padding: 10px 0;
+      font-size: 0.8em;
+      color: #777;
+    }
+     /* エラーメッセージ */
+    .error-message {
+      color: var(--error-color);
+      margin-top: 5px;
+      font-weight: bold;
+      text-align: center; /* 中央揃え */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CSV Vertical Merger | CSV縦結合ツール</h1>
+
+  <div id="drop-area">
+    ここにCSVファイルをドロップ<br>
+    Drop CSV files here<br>
+     または | or
+    <label for="file-input">ファイルを選択 | Select Files</label>
+    <input type="file" id="file-input" multiple accept=".csv">
+     <div id="drop-error" class="error-message hidden"></div>
+  </div>
+
+  <div id="file-list-container" class="file-list hidden">
+     <p>アップロードされたファイル: | Uploaded Files:</p>
+     <ul id="file-list"></ul>
+  </div>
+
+  <button id="merge-button" disabled>結合 | Merge</button>
+
+  <div id="sort-options" class="hidden">
+    <label for="sort-column">ソート列: | Sort by:</label>
+    <select id="sort-column"></select>
+    <label for="sort-order">順序: | Order:</label>
+    <select id="sort-order">
+      <option value="asc">昇順 | Ascending</option>
+      <option value="desc">降順 | Descending</option>
+    </select>
+    <button id="sort-button">ソート | Sort</button>
+  </div>
+
+  <div id="preview-options" class="hidden">
+    <label for="preview-type">プレビュー: | Preview:</label>
+        <select id="preview-type">
+            <option value="head">先頭からN行 | First N rows</option>
+            <option value="tail">末尾からN行 | Last N rows</option>
+            <option value="all">すべて | All rows</option>
+        </select>
+        <label for="preview-rows">行数: | Rows:</label>
+        <input type="number" id="preview-rows" min="1" value="5">
+  </div>
+
+   <div id="download-options" class="hidden">
+    <button id="toggle-sort-button">ソートを反映 | Apply Sort</button>
+    <button id="download-button">CSV保存 | Save as CSV</button>
+   </div>
+
+  <div id="preview-container" class="hidden">
+    <h2>プレビュー | Preview</h2>
+    <table id="preview-table"></table>
+  </div>
+
+<footer>
+    <p>© 2025 tsurezure_lab | 徒然研究室</p>
+</footer>
+
+<script>
+  const dropArea = document.getElementById('drop-area');
+  const fileInput = document.getElementById('file-input');
+  const fileList = document.getElementById('file-list');
+  const fileListContainer = document.getElementById('file-list-container');
+  const mergeButton = document.getElementById('merge-button');
+  const sortOptions = document.getElementById('sort-options');
+  const sortColumnSelect = document.getElementById('sort-column');
+  const sortOrderSelect = document.getElementById('sort-order');
+  const sortButton = document.getElementById('sort-button');
+  const previewContainer = document.getElementById('preview-container');
+  const previewTable = document.getElementById('preview-table');
+  const downloadButton = document.getElementById('download-button');
+  const downloadOptions = document.getElementById('download-options');
+  const toggleSortButton = document.getElementById('toggle-sort-button');
+  const previewOptions = document.getElementById('preview-options'); //追加
+  const previewTypeSelect = document.getElementById('preview-type'); //追加
+  const previewRowsInput = document.getElementById('preview-rows'); //追加
+  const dropError = document.getElementById('drop-error');
+
+
+  let allFiles = [];
+  let allHeaders = new Set();
+  let filledData = []; // 結合されたデータ
+  let sortedData = null; // ソートされたデータ (ソートされていない場合は null)
+  let baseFileName = "";
+  let isSorted = false; //ソートされているかのフラグ
+
+  fileListContainer.classList.add('hidden');
+
+  // ドラッグ＆ドロップのイベント処理
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('highlight');
+    dropError.classList.add('hidden'); // エラー表示を隠す
+    dropError.textContent = "";
+  });
+
+  dropArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('highlight');
+  });
+
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('highlight');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  // ファイル選択のイベント処理
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+  });
+
+
+    function handleFiles(files) {
+        let hasError = false; // エラーが発生したかどうか
+        for (const file of files) {
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                allFiles.push(file);
+                addFileToList(file);
+            } else {
+                //alert('CSVファイルを選択/ドロップしてください。: ' + file.name + '\n' +
+                //      'Please select or drop a CSV file.: ' + file.name
+                //);
+                dropError.textContent = 'CSVファイルを選択/ドロップしてください。| Please select or drop CSV files.';
+                dropError.classList.remove('hidden');
+                dropArea.classList.add('error'); // エラークラス追加
+                hasError = true;
+            }
+        }
+        //エラーがない時のみ表示
+        if(!hasError){
+            if (allFiles.length > 0) {
+                fileListContainer.classList.remove('hidden');
+                mergeButton.disabled = false;
+            }
+        }
+    }
+
+    function addFileToList(file){
+    const listItem = document.createElement('li');
+    listItem.classList.add('file-item');
+    listItem.textContent = file.name;
+    listItem.dataset.filename = file.name; //ファイル名をdata属性に
+    fileList.appendChild(listItem);
+
+    // 最初のファイル名からベースファイル名を作成 (最初に追加されたときのみ)
+    if (allFiles.length === 1) {
+      baseFileName = file.name.replace(/\.csv$/, '').slice(0, 5);
+    }
+  }
+
+  // SortableJS でドラッグ＆ドロップ可能にする
+  new Sortable(fileList, {
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      onEnd: () => { // ドラッグ＆ドロップ終了時の処理
+          // リストの順序を allFiles 配列に反映させる
+          const newList = [];
+          for (const li of fileList.children) {
+              const filename = li.dataset.filename;
+              const file = allFiles.find(f => f.name === filename); //名前で検索
+              if(file){
+                newList.push(file);
+              }
+          }
+          allFiles = newList;
+      }
+  });
+
+  // CSVをパースする関数
+    function parseCSV(text) {
+        const rows = [];
+        let row = [];
+        let field = '';
+        let inQuotes = false;
+        let i = 0;
+
+        while (i < text.length) {
+            const char = text[i];
+
+            if (char === '"') {
+                if (inQuotes && text[i + 1] === '"') {
+                    field += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                row.push(field);
+                field = '';
+            } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                row.push(field);
+                field = '';
+                rows.push(row);
+                row = [];
+                if (char === '\r' && text[i+1] === '\n') {
+                  i++;
+                }
+            }
+            else {
+                field += char;
+            }
+            i++;
+        }
+        if(field.length > 0){
+            row.push(field);
+        }
+
+        if(row.length > 0){
+            rows.push(row);
+        }
+        return rows;
+  }
+
+
+    async function readCSVText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const parsed = parseCSV(event.target.result);
+            resolve(parsed);
+          } catch (error) {
+            reject(file.name); //エラーの場合はファイル名をreject
+          }
+        };
+        reader.onerror = () => reject(file.name); //ここでもファイル名
+        reader.readAsText(file);
+      });
+    }
+
+  // 結合ボタンのクリックイベント
+    mergeButton.addEventListener('click', async () => {
+      if (allFiles.length === 0) {
+        alert('ファイルがありません。 | No files selected.');
+        return;
+      }
+
+      const combinedData = [];
+      allHeaders.clear();
+
+      // 非同期処理の結果を格納するための配列
+      const readPromises = [];
+
+      for (const file of allFiles) {
+        // readCSVText関数の呼び出しをPromiseの配列に追加
+        readPromises.push(readCSVText(file));
+      }
+
+      // 全てのファイル読み込み処理が終わるのを待つ
+      const parsedContents = await Promise.allSettled(readPromises);
+
+       // エラーがあったファイルの名前を格納する配列
+       const errorFiles = [];
+
+      // 読み込み結果を処理
+      for(const result of parsedContents) {
+        if(result.status === "fulfilled") {
+            const lines = result.value;
+
+            if (lines.length === 0) continue;
+
+            const headerRow = lines[0];
+            headerRow.forEach(header => allHeaders.add(header));
+
+            const fileNameBase = allFiles[parsedContents.indexOf(result)].name.replace(/\.csv$/, ''); //Promise.allSettledの順番は変わらない
+            const rows = lines.slice(1);
+
+            for (const row of rows) {
+              const rowData = {};
+              rowData['file'] = fileNameBase;
+              for (let i = 0; i < headerRow.length; i++) {
+                rowData[headerRow[i]] = row[i] || '';
+              }
+              combinedData.push(rowData);
+            }
+        } else {
+          // rejectされた場合 (読み込み/パースに失敗)
+          errorFiles.push(result.reason); // reasonにはファイル名が入る
+        }
+      }
+
+        // エラーが発生した場合、アラートを表示
+        if (errorFiles.length > 0) {
+          alert('以下のファイルの読み込み/パースに失敗しました:\n' + errorFiles.join('\n') + '\n\n'+
+                'Failed to load/parse the following files:\n' + errorFiles.join('\n')
+          );
+          return; // 処理中断
+        }
+
+      allHeaders.add('file');
+      const finalHeaderRow = Array.from(allHeaders);
+      const sortedHeaderRow = ['file'].concat(finalHeaderRow.filter(h => h !== 'file'));
+
+      filledData = [sortedHeaderRow].concat(combinedData.map(rowData => {
+        return sortedHeaderRow.map(header => rowData[header] || '');
+      }));
+
+      displayPreview(filledData);
+      sortOptions.classList.remove('hidden');
+      downloadOptions.classList.remove('hidden');
+      previewOptions.classList.remove('hidden'); // 追加
+      mergeButton.disabled = true;
+      populateSortColumnSelect(sortedHeaderRow);
+      sortedData = null;
+      isSorted = false;
+      toggleSortButton.textContent = "ソートを反映 | Apply Sort";
+    });
+
+
+  //ソート用の選択肢
+  function populateSortColumnSelect(headers) {
+    sortColumnSelect.innerHTML = '';
+    for (const header of headers) {
+      const option = document.createElement('option');
+      option.value = header;
+      option.textContent = header;
+      sortColumnSelect.appendChild(option);
+    }
+  }
+
+
+  function displayPreview(data) {
+    previewTable.innerHTML = '';
+
+    const headerRow = document.createElement('tr');
+    for (const header of data[0]) {
+      const th = document.createElement('th');
+      th.textContent = header;
+      th.addEventListener('click', () => {
+          const currentOrder = sortColumnSelect.value === header ? sortOrderSelect.value : 'asc';
+          sortOrderSelect.value = currentOrder === 'asc' ? 'desc' : 'asc';
+          sortColumnSelect.value = header;
+          sortData();
+
+      });
+      headerRow.appendChild(th);
+    }
+    previewTable.appendChild(headerRow);
+
+    // プレビューオプションの値を取得
+    const previewType = previewTypeSelect.value;
+    const previewRows = parseInt(previewRowsInput.value, 10);
+
+    let previewData = [];
+    const numRows = data.length - 1; // ヘッダーを除いた行数
+
+    if (previewType === 'all' || numRows <= 10) {
+        previewData.push(...data.slice(1)); // ヘッダを除くすべて
+    } else if (previewType === 'head') {
+        previewData.push(...data.slice(1, Math.min(previewRows + 1, data.length))); //+1はヘッダの分
+    } else if (previewType === 'tail') {
+        previewData.push(...data.slice(Math.max(data.length - previewRows, 1))); // data.length - previewRows が0以下にならないように
+    }
+
+     // 省略記号(...)の追加
+     if (previewType !== 'all' && numRows > previewRows && previewRows > 0) {
+        if (previewType === 'head' && numRows > previewRows) {
+            const omittedRow = createOmittedRow(data[0].length);
+            previewData.push(omittedRow);
+        } else if (previewType === 'tail' && numRows > previewRows) {
+            const omittedRow = createOmittedRow(data[0].length);
+            previewData.unshift(omittedRow); // 配列の先頭に追加
+        }
+     }
+
+    for (const rowData of previewData) {
+      const row = document.createElement('tr');
+      if (rowData.cells && rowData.cells[0].classList.contains('omitted-row')) {
+         row.appendChild(rowData.cells[0]);
+      }else{
+        for (const cell of rowData) {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          row.appendChild(td);
+        }
+      }
+
+      previewTable.appendChild(row);
+    }
+
+    previewContainer.classList.remove('hidden');
+  }
+
+  function createOmittedRow(colSpan) {
+      const omittedRow = document.createElement('tr');
+      const omittedCell = document.createElement('td');
+      omittedCell.colSpan = colSpan;
+      omittedCell.textContent = '...';
+      omittedCell.classList.add('omitted-row');
+      omittedRow.appendChild(omittedCell);
+      return omittedRow;
+    }
+
+  // ソート処理
+  sortButton.addEventListener('click', sortData);
+
+  function sortData() {
+    const columnIndex = filledData[0].indexOf(sortColumnSelect.value);
+    const order = sortOrderSelect.value;
+
+    if (columnIndex === -1) return;
+
+    // filledData をディープコピー
+    sortedData = filledData.map(row => [...row]);
+
+    // ヘッダー行を除いてソート
+    const header = sortedData.shift();
+    sortedData.sort((a, b) => {
+      const valA = a[columnIndex] === "" ? null : a[columnIndex];
+      const valB = b[columnIndex] === "" ? null : b[columnIndex];
+
+        if (valA === null && valB === null) return 0;
+        if (valA === null) return order === 'asc' ? 1 : -1;
+        if (valB === null) return order === 'asc' ? -1 : 1;
+
+      if (!isNaN(parseFloat(valA)) && !isNaN(parseFloat(valB))) {
+        return order === 'asc' ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
+      } else {
+        return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+    });
+    sortedData.unshift(header);
+
+    displayPreview(sortedData);
+    isSorted = true;
+    toggleSortButton.textContent = "ソートを反映 | Apply Sort";
+  }
+
+  // ソート反映/非反映ボタン
+  toggleSortButton.addEventListener('click', () => {
+    if (toggleSortButton.textContent === 'ソートを反映 | Apply Sort') {
+      toggleSortButton.textContent = 'ソートを反映しない | Do Not Apply Sort';
+    } else {
+      toggleSortButton.textContent = 'ソートを反映 | Apply Sort';
+    }
+  });
+
+
+  function escapeCSVField(field) {
+    if (typeof field !== 'string') {
+      return field;
+    }
+    if (/[,"\n]/.test(field)) {
+      return '"' + field.replace(/"/g, '""') + '"';
+    }
+    return field;
+  }
+
+  downloadButton.addEventListener('click', () => {
+    let dataToDownload = filledData; // デフォルトはソートなし
+
+    // 「ソートを反映」ボタンが押されている場合
+    if (toggleSortButton.textContent === 'ソートを反映しない | Do Not Apply Sort') {
+        dataToDownload = sortedData;
+    }
+
+    const csvContent = dataToDownload.map(row => row.map(field => escapeCSVField(field)).join(',')).join('\n');
+    const filename = baseFileName + "_combined.csv";
+    downloadCSV(csvContent, filename);
+  });
+
+  function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const blobWithBOM = new Blob([bom, content], {type: "text/csv;charset=utf-8"});
+
+    if (navigator.msSaveBlob) {
+      navigator.msSaveBlob(blobWithBOM, filename);
+    } else {
+      const url = URL.createObjectURL(blobWithBOM);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // プレビューオプションの変更を検知
+  previewTypeSelect.addEventListener('change', () => {
+    if(filledData.length > 0) {
+      displayPreview(filledData);
+    }
+  });
+  previewRowsInput.addEventListener('change', () => {
+    if (filledData.length > 0) {
+      displayPreview(filledData)
+    }
+  });
+  //数値のみ
+  previewRowsInput.addEventListener("input", (event) => {
+        // 入力値から数字以外の文字を取り除く
+        event.target.value = event.target.value.replace(/[^0-9]/g, '');
+  });
+
+</script>
+
+</body>
+</html>
