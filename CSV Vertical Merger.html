@@ -218,6 +218,31 @@
         border: 1px solid #ccc;
         margin-right: 10px; /* select と input の間隔 */
     }
+    /* 文字コード選択 */
+    #encoding-select {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+
+    /* プログレスバー */
+    #progress-container {
+      width: 80%;
+      max-width: 600px;
+      background-color: #eee;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      margin-top: 10px;
+    }
+
+    #progress-bar {
+      height: 20px;
+      background-color: var(--primary-color);
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
 
     /* フッターのスタイル */
      footer {
@@ -249,6 +274,10 @@
      <div id="drop-error" class="error-message hidden"></div>
   </div>
 
+  <div id="progress-container" class="hidden">
+    <div id="progress-bar"></div>
+  </div>
+
   <div id="file-list-container" class="file-list hidden">
      <p>アップロードされたファイル: | Uploaded Files:</p>
      <ul id="file-list"></ul>
@@ -276,6 +305,14 @@
         </select>
         <label for="preview-rows">行数: | Rows:</label>
         <input type="number" id="preview-rows" min="1" value="5">
+        <!-- 文字コード選択 -->
+        <label for="encoding-select">文字コード: | Encoding:</label>
+        <select id="encoding-select">
+          <option value="UTF-8">UTF-8</option>
+          <option value="Shift_JIS">Shift_JIS</option>
+          <option value="EUC-JP">EUC-JP</option>
+        </select>
+      <button id="reload-preview-button">プレビュー更新 | Reload Preview</button>
   </div>
 
    <div id="download-options" class="hidden">
@@ -307,10 +344,14 @@
   const downloadButton = document.getElementById('download-button');
   const downloadOptions = document.getElementById('download-options');
   const toggleSortButton = document.getElementById('toggle-sort-button');
-  const previewOptions = document.getElementById('preview-options'); //追加
-  const previewTypeSelect = document.getElementById('preview-type'); //追加
-  const previewRowsInput = document.getElementById('preview-rows'); //追加
+  const previewOptions = document.getElementById('preview-options');
+  const previewTypeSelect = document.getElementById('preview-type');
+  const previewRowsInput = document.getElementById('preview-rows');
   const dropError = document.getElementById('drop-error');
+  const encodingSelect = document.getElementById('encoding-select');
+  const reloadPreviewButton = document.getElementById('reload-preview-button');
+  const progressBar = document.getElementById('progress-bar'); // 追加
+  const progressContainer = document.getElementById('progress-container'); // 追加
 
 
   let allFiles = [];
@@ -354,9 +395,6 @@
                 allFiles.push(file);
                 addFileToList(file);
             } else {
-                //alert('CSVファイルを選択/ドロップしてください。: ' + file.name + '\n' +
-                //      'Please select or drop a CSV file.: ' + file.name
-                //);
                 dropError.textContent = 'CSVファイルを選択/ドロップしてください。| Please select or drop CSV files.';
                 dropError.classList.remove('hidden');
                 dropArea.classList.add('error'); // エラークラス追加
@@ -449,47 +487,56 @@
   }
 
 
-    async function readCSVText(file) {
+    async function readCSVText(file, encoding = "UTF-8") {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
+
+        reader.onprogress = (event) => { // プログレスバー更新
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            progressBar.style.width = percentComplete + '%';
+          }
+        };
+
         reader.onload = (event) => {
           try {
             const parsed = parseCSV(event.target.result);
             resolve(parsed);
           } catch (error) {
-            reject(file.name); //エラーの場合はファイル名をreject
+            reject(file.name);
           }
         };
-        reader.onerror = () => reject(file.name); //ここでもファイル名
-        reader.readAsText(file);
+        reader.onerror = () => reject(file.name);
+        reader.readAsText(file, encoding);
       });
     }
 
-  // 結合ボタンのクリックイベント
-    mergeButton.addEventListener('click', async () => {
+  // 結合ボタン、プレビュー更新ボタンクリック時の処理
+  mergeButton.addEventListener('click', loadAndPreview);
+  reloadPreviewButton.addEventListener('click', loadAndPreview);
+
+  async function loadAndPreview() {
       if (allFiles.length === 0) {
         alert('ファイルがありません。 | No files selected.');
         return;
       }
 
+      progressContainer.classList.remove('hidden'); // プログレスバー表示
+      progressBar.style.width = '0%'; // プログレスバー初期化
+
       const combinedData = [];
       allHeaders.clear();
 
-      // 非同期処理の結果を格納するための配列
       const readPromises = [];
+      const selectedEncoding = encodingSelect.value;
 
       for (const file of allFiles) {
-        // readCSVText関数の呼び出しをPromiseの配列に追加
-        readPromises.push(readCSVText(file));
+        readPromises.push(readCSVText(file, selectedEncoding));
       }
 
-      // 全てのファイル読み込み処理が終わるのを待つ
       const parsedContents = await Promise.allSettled(readPromises);
+      const errorFiles = [];
 
-       // エラーがあったファイルの名前を格納する配列
-       const errorFiles = [];
-
-      // 読み込み結果を処理
       for(const result of parsedContents) {
         if(result.status === "fulfilled") {
             const lines = result.value;
@@ -499,7 +546,7 @@
             const headerRow = lines[0];
             headerRow.forEach(header => allHeaders.add(header));
 
-            const fileNameBase = allFiles[parsedContents.indexOf(result)].name.replace(/\.csv$/, ''); //Promise.allSettledの順番は変わらない
+            const fileNameBase = allFiles[parsedContents.indexOf(result)].name.replace(/\.csv$/, '');
             const rows = lines.slice(1);
 
             for (const row of rows) {
@@ -511,17 +558,17 @@
               combinedData.push(rowData);
             }
         } else {
-          // rejectされた場合 (読み込み/パースに失敗)
-          errorFiles.push(result.reason); // reasonにはファイル名が入る
+          errorFiles.push(result.reason);
         }
       }
 
-        // エラーが発生した場合、アラートを表示
         if (errorFiles.length > 0) {
-          alert('以下のファイルの読み込み/パースに失敗しました:\n' + errorFiles.join('\n') + '\n\n'+
-                'Failed to load/parse the following files:\n' + errorFiles.join('\n')
-          );
-          return; // 処理中断
+            // プログレスバーを非表示
+            progressContainer.classList.add('hidden');
+            alert('以下のファイルの読み込み/パースに失敗しました:\n' + errorFiles.join('\n') + '\n\n'+
+                  'Failed to load/parse the following files:\n' + errorFiles.join('\n')
+            );
+            return; // 処理中断
         }
 
       allHeaders.add('file');
@@ -532,16 +579,23 @@
         return sortedHeaderRow.map(header => rowData[header] || '');
       }));
 
+      previewTable.innerHTML = '';
       displayPreview(filledData);
       sortOptions.classList.remove('hidden');
       downloadOptions.classList.remove('hidden');
-      previewOptions.classList.remove('hidden'); // 追加
+      previewOptions.classList.remove('hidden');
       mergeButton.disabled = true;
       populateSortColumnSelect(sortedHeaderRow);
       sortedData = null;
       isSorted = false;
       toggleSortButton.textContent = "ソートを反映 | Apply Sort";
-    });
+
+       // プログレスバーを一旦100%にしてから、少し遅延させて非表示にする
+       progressBar.style.width = '100%';
+        setTimeout(() => {
+          progressContainer.classList.add('hidden');
+        }, 300); // 300ミリ秒後に非表示
+    }
 
 
   //ソート用の選択肢
@@ -557,7 +611,7 @@
 
 
   function displayPreview(data) {
-    previewTable.innerHTML = '';
+
 
     const headerRow = document.createElement('tr');
     for (const header of data[0]) {
@@ -718,13 +772,14 @@
 
   // プレビューオプションの変更を検知
   previewTypeSelect.addEventListener('change', () => {
-    if(filledData.length > 0) {
-      displayPreview(filledData);
-    }
+      if(filledData.length > 0){
+        displayPreview(filledData);
+      }
+
   });
   previewRowsInput.addEventListener('change', () => {
-    if (filledData.length > 0) {
-      displayPreview(filledData)
+    if(filledData.length > 0){
+        displayPreview(filledData);
     }
   });
   //数値のみ

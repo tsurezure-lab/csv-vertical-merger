@@ -16,13 +16,15 @@ This is a simple, single-file HTML application that allows you to merge multiple
 
 *   **Drag and Drop:** Easily add CSV files by dragging and dropping them onto the designated area. You can also click the drop area to select files.
 *   **File List Reordering:** Change the order in which files are merged by dragging and dropping them in the file list.
-*   **Handles Different Column Structures:**  Automatically merges CSV files even if they have different columns. Missing values are filled with blanks.
-*   **Preview:**  Preview the merged data before downloading, with options to show the first N rows, last N rows, or all rows.
+*   **Handles Different Column Structures:** Automatically merges CSV files even if they have different columns. Missing values are filled with blanks.
+*   **Preview:** Preview the merged data before downloading, with options to show the first N rows, last N rows, or all rows.
+*   **Character Encoding Selection:**  Choose the character encoding (UTF-8, Shift-JIS, EUC-JP) to handle files with different encodings and prevent garbled text ("mojibake").
+*   **Progress Bar:** A progress bar displays the file loading status, providing visual feedback during processing.
 *   **Sorting:** Sort the merged data by any column (ascending or descending) before downloading.
-*   **"file" Column:**  Automatically adds a "file" column to the merged data, indicating the source file for each row.
+*   **"file" Column:** Automatically adds a "file" column to the merged data, indicating the source file for each row.
 *   **Error Handling:** Displays error messages for invalid files or CSV parsing errors, and identifies the problematic file.
-*   **Single HTML File:**  No external dependencies, just a single, self-contained HTML file.
-*   **Client-side Processing:**  All merging and processing happens within your browser; no data is sent to a server.
+*   **Single HTML File:** No external dependencies, just a single, self-contained HTML file.
+*   **Client-side Processing:** All merging and processing happens within your browser; no data is sent to a server.
 *   **Bilingual (English/Japanese):** The user interface is presented in both English and Japanese.
 
 ### Usage
@@ -35,9 +37,10 @@ This is a simple, single-file HTML application that allows you to merge multiple
     *   **Drag and Drop:** Drag CSV files from your file explorer and drop them onto the area labeled "Drop CSV files here | または | or Select Files".
     *   **File Selection:** Click the "Select Files | ファイルを選択" label to open a file selection dialog.
 3.  (Optional) Reorder files in the list by dragging them. This determines the order in which they will be merged.
-4.  Click the "Merge | 結合" button.
+4.  Click the "Merge | 結合" button.  The progress bar will show the loading status.
 5.  (Optional) Preview and sort the merged data:
     *   **Preview Options:** Choose to preview "First N rows", "Last N rows", or "All rows". Enter the number of rows (N) in the input box.
+    *   **Character Encoding:** If the preview shows garbled text, select a different character encoding (UTF-8, Shift_JIS, EUC-JP) and click "Reload Preview | プレビュー更新".
     *   **Sort:** Click on a column header in the preview to sort by that column.  Click again to reverse the sort order.  You can also use the "Sort by" and "Order" dropdowns and the "Sort" button.
 6.  Choose whether to apply the sorting to the downloaded file using the "Apply Sort | ソートを反映" / "Do Not Apply Sort | ソートを反映しない" button.
 7.  Click the "Save as CSV | CSV保存" button to download the merged CSV file.
@@ -71,6 +74,8 @@ tsurezure_lab
 *   **ファイルリストの並べ替え:** ファイルリスト内でファイルをドラッグ＆ドロップすることで、結合する順序を変更できます。
 *   **異なる列構造に対応:** 列が異なるCSVファイルでも、自動的に結合します。欠損値は空白で埋められます。
 *   **プレビュー:** ダウンロード前に結合されたデータをプレビューできます。「先頭からN行」、「末尾からN行」、または「すべて」の行を表示するオプションがあります。
+*   **文字コード選択:** 文字コード（UTF-8, Shift_JIS, EUC-JP）を選択して、異なるエンコーディングのファイルを扱い、文字化けを防ぐことができます。
+*   **プログレスバー:** ファイルの読み込み状況を示すプログレスバーが表示され、処理中の視覚的なフィードバックを提供します。
 *   **ソート:** ダウンロード前に、結合されたデータを任意の列でソートできます（昇順/降順）。
 *   **"file" 列:** 各行のソースファイルを示す "file" 列が自動的に追加されます。
 *   **エラー処理:** 無効なファイルやCSV解析エラーが発生した場合、エラーメッセージを表示し、問題のあるファイルを特定します。
@@ -79,6 +84,7 @@ tsurezure_lab
 *   **バイリンガル (英語/日本語):** ユーザーインターフェースは英語と日本語で表示されます。
 
 ### 使用方法
+
 ![CSV Vertical Merger スクリーンショット](images/screencapture.png)
 *CSV Vertical Mergerの動作中の様子*
 
@@ -87,9 +93,10 @@ tsurezure_lab
     *   **ドラッグ＆ドロップ:**  CSVファイルをファイルエクスプローラーから「ここにCSVファイルをドロップ | Drop CSV files here」と書かれたエリアにドラッグ＆ドロップします。
     *   **ファイル選択:** 「ファイルを選択 | Select Files」ラベルをクリックして、ファイル選択ダイアログを開きます。
 3.  (オプション) リスト内のファイルをドラッグして、ファイルの順序を並べ替えます。 これは、ファイルが結合される順序を決定します。
-4.  「結合 | Merge」ボタンをクリックします。
+4.  「結合 | Merge」ボタンをクリックします。プログレスバーに読み込み状況が表示されます。
 5.  (オプション) 結合されたデータをプレビューし、ソートします。
     *   **プレビューオプション:** 「先頭からN行」、「末尾からN行」、「すべて」のいずれかを選択してプレビューします。 行数 (N) は入力ボックスに入力します。
+    *   **文字コード:** プレビューで文字化けが発生する場合は、別の文字コード (UTF-8, Shift_JIS, EUC-JP) を選択し、「プレビュー更新 | Reload Preview」をクリックしてください。
     *   **ソート:** プレビュー内の列ヘッダーをクリックすると、その列でソートします。 もう一度クリックすると、ソート順が逆になります。 「ソート列」と「順序」のドロップダウンと「ソート」ボタンを使用することもできます。
 6.  「ソートを反映 | Apply Sort」/「ソートを反映しない | Do Not Apply Sort」ボタンを使って、ダウンロードするファイルにソートを適用するかどうかを選択します。
 7.  「CSV保存 | Save as CSV」ボタンをクリックして、結合されたCSVファイルをダウンロードします。
