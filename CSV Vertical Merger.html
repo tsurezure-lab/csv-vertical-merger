@@ -4,287 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSV Vertical Merger | CSV縦結合ツール</title>
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
-  <!-- SortableJS -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
   <style>
     :root {
-      --primary-color: #87CEEB; /* パステルブルー (キーカラー) */
-      --secondary-color: #F9F4EE; /* 背景色 */
+      --primary-color: #87CEEB;
+      --secondary-color: #F9F4EE;
       --text-color: #333;
       --light-gray: #f0f0f0;
-      --error-color: #d9534f; /* エラーメッセージ用 */
+      --error-color: #d9534f;
     }
-
-    body {
-      font-family: 'Zen Maru Gothic', sans-serif;
-      background-color: var(--secondary-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      position: relative;
-      width: 100%;
-    }
-
-    h1 {
-      color: var(--primary-color);
-      margin-bottom: 20px;
-      text-align: center;
-      font-size: 1.8em;
-    }
-
-    /* ドロップエリア */
-    #drop-area {
-      border: 3px dashed var(--primary-color);
-      padding: 40px;
-      text-align: center;
-      margin-bottom: 20px;
-      border-radius: 15px;
-      background-color: white;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
-      width: 80%;
-      max-width: 600px;
-    }
-
-    #drop-area.highlight {
-      background-color: var(--light-gray);
-      border-color: #6495ED; /* ホバー時のボーダー色 */
-    }
-    #drop-area.error { /* エラー時のスタイル */
-      border-color: var(--error-color);
-    }
-
-    /* ファイル選択ボタン */
-    #drop-area label {
-      display: inline-block;
-      padding: 10px 15px;
-      background-color: var(--primary-color);
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    #drop-area label:hover {
-        background-color: #6495ED; /* ホバー時の背景色 */
-    }
-
-    #file-input {
-      display: none;
-    }
-
-    /* ファイルリスト */
-    .file-list {
-      margin-top: 15px;
-      margin-bottom: 15px;
-      text-align: center;
-      width: 80%; /* 幅をドロップエリアに合わせる */
-      max-width: 600px; /* 最大幅 */
-    }
-    .file-list ul {
-        list-style: none;
-        padding: 0;
-        /* SortableJS 用のスタイル */
-        display: flex;
-        flex-wrap: wrap; /* 折り返し */
-        justify-content: center; /* 中央揃え */
-    }
-    .file-list p {
-        font-weight: bold;
-    }
-
-    .file-item {
-      margin: 5px; /* ファイル項目間の余白 */
-      background-color: white;
-      padding: 8px 12px;
-      border-radius: 8px;
-      /*display: inline-block;削除 */
-      cursor: grab; /* ドラッグ可能カーソル */
-      border: 1px solid #ccc;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-     .file-item:active {
-        cursor: grabbing;
-     }
-
-    /* ボタン共通スタイル */
-    button {
-      padding: 10px 20px;
-      margin: 5px;
-      font-weight: 600;
-      color: white;
-      background-color: var(--primary-color);
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #6495ED; /* ホバー時の背景色 */
-      transform: translateY(-2px);
-    }
-
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-
-    /* ソートオプション */
-    #sort-options {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    #sort-options label {
-      margin: 0 10px;
-      display: inline-block; /* インラインブロック化 */
-      vertical-align: middle; /* 垂直方向中央揃え */
-    }
-
-    #sort-options select {
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      margin: 0 5px;
-      vertical-align: middle; /* 垂直方向中央揃え */
-    }
-     /* ダウンロードオプション */
-     #download-options{
-        text-align: center;
-     }
-
-    /* プレビューコンテナ */
-     #preview-container {
-      margin-top: 20px;
-      margin-bottom: 40px;
-      overflow-x: auto;
-      width: 95%; /* ウィンドウ幅の95% */
-      /* max-width: 800px;  必要に応じてコメントアウトを外す */
-      background-color: white;
-      border-radius: 15px;
-      padding: 15px;
-      box-sizing: border-box; /* 重要 */
-    }
-     #preview-container h2{
-        text-align: center;
-     }
-
-    #preview-table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    #preview-table th, #preview-table td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-
-    #preview-table th {
-      background-color: var(--light-gray);
-      cursor: pointer;
-      font-weight: 600;
-    }
-    #preview-table th:hover{
-        background-color: #ddd;
-    }
-
-    .omitted-row {
-      text-align: center;
-      font-style: italic;
-      color: #888;
-    }
-
-    .hidden {
-      display: none;
-    }
-     /*プレビュー行数指定*/
-    #preview-options {
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    #preview-options label {
-        margin-right: 5px;
-    }
-    #preview-options select, #preview-options input[type="number"] {
-        padding: 5px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        margin-right: 10px; /* select と input の間隔 */
-    }
-    /* 文字コード選択 */
-    #encoding-select {
-      padding: 5px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      margin-right: 10px;
-    }
-
-    /* プログレスバー */
-    #progress-container {
-      width: 80%;
-      max-width: 600px;
-      background-color: #eee;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      margin-top: 10px;
-    }
-
-    #progress-bar {
-      height: 20px;
-      background-color: var(--primary-color);
-      width: 0%;
-      border-radius: 10px;
-      transition: width 0.3s ease;
-    }
-
-    /* フッターのスタイル */
-     footer {
-      width: 100%; /* bodyの幅に合わせる */
-      text-align: center;
-      padding: 10px 0;
-      font-size: 0.8em;
-      color: #777;
-    }
-     /* エラーメッセージ */
-    .error-message {
-      color: var(--error-color);
-      margin-top: 5px;
-      font-weight: bold;
-      text-align: center; /* 中央揃え */
-    }
+    body { font-family: 'Zen Maru Gothic', sans-serif; background-color: var(--secondary-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; position: relative; width: 100%; }
+    h1 { color: var(--primary-color); margin-bottom: 20px; text-align: center; font-size: 1.8em; }
+    #drop-area { border: 3px dashed var(--primary-color); padding: 40px; text-align: center; margin-bottom: 20px; border-radius: 15px; background-color: white; transition: background-color 0.3s ease, border-color 0.3s ease; width: 80%; max-width: 600px; }
+    #drop-area.highlight { background-color: var(--light-gray); border-color: #6495ED; }
+    #drop-area.error { border-color: var(--error-color); }
+    #drop-area label { display: inline-block; padding: 10px 15px; background-color: var(--primary-color); color: white; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; font-weight: 600; text-decoration: none; }
+    #drop-area label:hover { background-color: #6495ED; }
+    #file-input { display: none; }
+    .file-list { margin-top: 15px; margin-bottom: 15px; text-align: center; width: 80%; max-width: 600px; }
+    .file-list ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; }
+    .file-list p { font-weight: bold; }
+    .file-item { margin: 5px; background-color: white; padding: 8px 12px; border-radius: 8px; cursor: grab; border: 1px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .file-item:active { cursor: grabbing; }
+    button { padding: 10px 20px; margin: 5px; font-weight: 600; color: white; background-color: var(--primary-color); border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; }
+    button:hover { background-color: #6495ED; transform: translateY(-2px); }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+    #sort-options { margin-bottom: 20px; text-align: center; }
+    #sort-options label { margin: 0 10px; display: inline-block; vertical-align: middle; }
+    #sort-options select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; margin: 0 5px; vertical-align: middle; }
+    #download-options { text-align: center; }
+    #preview-container { margin-top: 20px; margin-bottom: 40px; overflow-x: auto; width: 95%; background-color: white; border-radius: 15px; padding: 15px; box-sizing: border-box; }
+    #preview-container h2 { text-align: center; }
+    #preview-table { border-collapse: collapse; width: 100%; }
+    #preview-table th, #preview-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    #preview-table th { background-color: var(--light-gray); cursor: pointer; font-weight: 600; }
+    #preview-table th:hover { background-color: #ddd; }
+    .omitted-row { text-align: center; font-style: italic; color: #888; }
+    .hidden { display: none; }
+    #preview-options { margin-bottom: 10px; text-align: center; }
+    #preview-options label { margin-right: 5px; }
+    #preview-options select, #preview-options input[type="number"] { padding: 5px; border-radius: 4px; border: 1px solid #ccc; margin-right: 10px; }
+    #encoding-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; margin-right: 10px; }
+    #progress-container { width: 80%; max-width: 600px; background-color: #eee; border-radius: 10px; margin: 5px 0; }
+    #progress-bar { height: 20px; background-color: var(--primary-color); width: 0%; border-radius: 10px; transition: width 0.3s ease; }
+    footer { width: 100%; text-align: center; padding: 10px 0; font-size: 0.8em; color: #777; }
+    .error-message { color: var(--error-color); margin-top: 5px; font-weight: bold; text-align: center; }
   </style>
 </head>
 <body>
-
   <h1>CSV Vertical Merger | CSV縦結合ツール</h1>
-
   <div id="drop-area">
-    ここにCSVファイルをドロップ<br>
-    Drop CSV files here<br>
-     または | or
+    ここにCSVファイルをドロップ<br>Drop CSV files here<br>または | or
     <label for="file-input">ファイルを選択 | Select Files</label>
     <input type="file" id="file-input" multiple accept=".csv">
-     <div id="drop-error" class="error-message hidden"></div>
+    <div id="drop-error" class="error-message hidden"></div>
   </div>
-
+  <div id="file-list-container" class="file-list hidden">
+    <p>アップロードされたファイル: | Uploaded Files:</p>
+    <ul id="file-list"></ul>
+  </div>
+  <button id="merge-button" disabled>結合 | Merge</button>
   <div id="progress-container" class="hidden">
     <div id="progress-bar"></div>
   </div>
-
-  <div id="file-list-container" class="file-list hidden">
-     <p>アップロードされたファイル: | Uploaded Files:</p>
-     <ul id="file-list"></ul>
-  </div>
-
-  <button id="merge-button" disabled>結合 | Merge</button>
-
   <div id="sort-options" class="hidden">
     <label for="sort-column">ソート列: | Sort by:</label>
     <select id="sort-column"></select>
@@ -295,289 +78,336 @@
     </select>
     <button id="sort-button">ソート | Sort</button>
   </div>
-
   <div id="preview-options" class="hidden">
     <label for="preview-type">プレビュー: | Preview:</label>
-        <select id="preview-type">
-            <option value="head">先頭からN行 | First N rows</option>
-            <option value="tail">末尾からN行 | Last N rows</option>
-            <option value="all">すべて | All rows</option>
-        </select>
-        <label for="preview-rows">行数: | Rows:</label>
-        <input type="number" id="preview-rows" min="1" value="5">
-        <!-- 文字コード選択 -->
-        <label for="encoding-select">文字コード: | Encoding:</label>
-        <select id="encoding-select">
-          <option value="UTF-8">UTF-8</option>
-          <option value="Shift_JIS">Shift_JIS</option>
-          <option value="EUC-JP">EUC-JP</option>
-        </select>
-      <button id="reload-preview-button">プレビュー更新 | Reload Preview</button>
+    <select id="preview-type">
+      <option value="head">先頭からN行 | First N rows</option>
+      <option value="tail">末尾からN行 | Last N rows</option>
+      <option value="all">すべて | All rows</option>
+    </select>
+    <label for="preview-rows">行数: | Rows:</label>
+    <input type="number" id="preview-rows" min="1" value="5">
+    <label for="encoding-select">文字コード: | Encoding:</label>
+    <select id="encoding-select">
+      <option value="UTF-8">UTF-8</option>
+      <option value="Shift_JIS">Shift_JIS</option>
+      <option value="EUC-JP">EUC-JP</option>
+    </select>
+    <button id="reload-preview-button">プレビュー更新 | Reload Preview</button>
   </div>
-
-   <div id="download-options" class="hidden">
+  <div id="download-options" class="hidden">
     <button id="toggle-sort-button">ソートを反映 | Apply Sort</button>
     <button id="download-button">CSV保存 | Save as CSV</button>
-   </div>
-
+  </div>
   <div id="preview-container" class="hidden">
     <h2>プレビュー | Preview</h2>
     <table id="preview-table"></table>
   </div>
-
-<footer>
+  <footer>
     <p>© 2025 tsurezure_lab | 徒然研究室</p>
-</footer>
+  </footer>
 
-<script>
-  const dropArea = document.getElementById('drop-area');
-  const fileInput = document.getElementById('file-input');
-  const fileList = document.getElementById('file-list');
-  const fileListContainer = document.getElementById('file-list-container');
-  const mergeButton = document.getElementById('merge-button');
-  const sortOptions = document.getElementById('sort-options');
-  const sortColumnSelect = document.getElementById('sort-column');
-  const sortOrderSelect = document.getElementById('sort-order');
-  const sortButton = document.getElementById('sort-button');
-  const previewContainer = document.getElementById('preview-container');
-  const previewTable = document.getElementById('preview-table');
-  const downloadButton = document.getElementById('download-button');
-  const downloadOptions = document.getElementById('download-options');
-  const toggleSortButton = document.getElementById('toggle-sort-button');
-  const previewOptions = document.getElementById('preview-options');
-  const previewTypeSelect = document.getElementById('preview-type');
-  const previewRowsInput = document.getElementById('preview-rows');
-  const dropError = document.getElementById('drop-error');
-  const encodingSelect = document.getElementById('encoding-select');
-  const reloadPreviewButton = document.getElementById('reload-preview-button');
-  const progressBar = document.getElementById('progress-bar'); // 追加
-  const progressContainer = document.getElementById('progress-container'); // 追加
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const fileList = document.getElementById('file-list');
+    const fileListContainer = document.getElementById('file-list-container');
+    const mergeButton = document.getElementById('merge-button');
+    const sortOptions = document.getElementById('sort-options');
+    const sortColumnSelect = document.getElementById('sort-column');
+    const sortOrderSelect = document.getElementById('sort-order');
+    const sortButton = document.getElementById('sort-button');
+    const previewContainer = document.getElementById('preview-container');
+    const previewTable = document.getElementById('preview-table');
+    const downloadButton = document.getElementById('download-button');
+    const downloadOptions = document.getElementById('download-options');
+    const toggleSortButton = document.getElementById('toggle-sort-button');
+    const previewOptions = document.getElementById('preview-options');
+    const previewTypeSelect = document.getElementById('preview-type');
+    const previewRowsInput = document.getElementById('preview-rows');
+    const dropError = document.getElementById('drop-error');
+    const encodingSelect = document.getElementById('encoding-select');
+    const reloadPreviewButton = document.getElementById('reload-preview-button');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
 
+    let allFiles = [];
+    let allHeaders = new Set();
+    let filledData = [];
+    let sortedData = null;
+    let baseFileName = "";
+    let isSorted = false;
+    let outputBlobs = [];
 
-  let allFiles = [];
-  let allHeaders = new Set();
-  let filledData = []; // 結合されたデータ
-  let sortedData = null; // ソートされたデータ (ソートされていない場合は null)
-  let baseFileName = "";
-  let isSorted = false; //ソートされているかのフラグ
+    fileListContainer.classList.add('hidden');
 
-  fileListContainer.classList.add('hidden');
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      console.log('Drag over');
+      dropArea.classList.add('highlight');
+      dropError.classList.add('hidden');
+      dropError.textContent = "";
+    });
 
-  // ドラッグ＆ドロップのイベント処理
-  dropArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropArea.classList.add('highlight');
-    dropError.classList.add('hidden'); // エラー表示を隠す
-    dropError.textContent = "";
-  });
+    dropArea.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      console.log('Drag leave');
+      dropArea.classList.remove('highlight');
+    });
 
-  dropArea.addEventListener('dragleave', (e) => {
-    e.preventDefault();
-    dropArea.classList.remove('highlight');
-  });
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      console.log('Drop event triggered');
+      dropArea.classList.remove('highlight');
+      handleFiles(e.dataTransfer.files);
+    });
 
-  dropArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropArea.classList.remove('highlight');
-    handleFiles(e.dataTransfer.files);
-  });
-
-  // ファイル選択のイベント処理
-  fileInput.addEventListener('change', (e) => {
-    handleFiles(e.target.files);
-  });
-
+    fileInput.addEventListener('change', (e) => {
+      console.log('File input change triggered');
+      handleFiles(e.target.files);
+    });
 
     function handleFiles(files) {
-        let hasError = false; // エラーが発生したかどうか
+      console.log('Handling files, count:', files.length);
+      let hasError = false;
+      if (files.length + allFiles.length > 500) {
+        console.log('Too many files');
+        dropError.textContent = '一度にアップロードできるファイルは500個までです。| You can upload up to 500 files at a time.';
+        dropError.classList.remove('hidden');
+        dropArea.classList.add('error');
+        hasError = true;
+      } else {
         for (const file of files) {
-            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-                allFiles.push(file);
-                addFileToList(file);
-            } else {
-                dropError.textContent = 'CSVファイルを選択/ドロップしてください。| Please select or drop CSV files.';
-                dropError.classList.remove('hidden');
-                dropArea.classList.add('error'); // エラークラス追加
-                hasError = true;
-            }
+          if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+            console.log('Adding file:', file.name);
+            allFiles.push(file);
+            addFileToList(file);
+          } else {
+            console.log('Invalid file type:', file.name);
+            dropError.textContent = 'CSVファイルを選択/ドロップしてください。| Please select or drop CSV files.';
+            dropError.classList.remove('hidden');
+            dropArea.classList.add('error');
+            hasError = true;
+          }
         }
-        //エラーがない時のみ表示
-        if(!hasError){
-            if (allFiles.length > 0) {
-                fileListContainer.classList.remove('hidden');
-                mergeButton.disabled = false;
-            }
-        }
+      }
+      if (!hasError && allFiles.length > 0) {
+        console.log('Showing file list, enabling merge button');
+        fileListContainer.classList.remove('hidden');
+        mergeButton.disabled = false;
+      } else {
+        console.log('Error occurred or no files added');
+      }
     }
 
-    function addFileToList(file){
-    const listItem = document.createElement('li');
-    listItem.classList.add('file-item');
-    listItem.textContent = file.name;
-    listItem.dataset.filename = file.name; //ファイル名をdata属性に
-    fileList.appendChild(listItem);
-
-    // 最初のファイル名からベースファイル名を作成 (最初に追加されたときのみ)
-    if (allFiles.length === 1) {
-      baseFileName = file.name.replace(/\.csv$/, '').slice(0, 5);
+    function addFileToList(file) {
+      console.log('Adding to list:', file.name);
+      const listItem = document.createElement('li');
+      listItem.classList.add('file-item');
+      listItem.textContent = file.name;
+      listItem.dataset.filename = file.name;
+      fileList.appendChild(listItem);
+      if (allFiles.length === 1) baseFileName = file.name.replace(/\.csv$/, '').slice(0, 5);
+      console.log('File added to list, current count:', allFiles.length);
     }
-  }
 
-  // SortableJS でドラッグ＆ドロップ可能にする
-  new Sortable(fileList, {
+    new Sortable(fileList, {
       animation: 150,
       ghostClass: 'sortable-ghost',
-      onEnd: () => { // ドラッグ＆ドロップ終了時の処理
-          // リストの順序を allFiles 配列に反映させる
-          const newList = [];
-          for (const li of fileList.children) {
-              const filename = li.dataset.filename;
-              const file = allFiles.find(f => f.name === filename); //名前で検索
-              if(file){
-                newList.push(file);
-              }
-          }
-          allFiles = newList;
+      onEnd: () => {
+        console.log('Sort ended');
+        const newList = [];
+        for (const li of fileList.children) {
+          const filename = li.dataset.filename;
+          const file = allFiles.find(f => f.name === filename);
+          if (file) newList.push(file);
+        }
+        allFiles = newList;
+        console.log('Files reordered, new count:', allFiles.length);
       }
-  });
+    });
 
-  // CSVをパースする関数
-    function parseCSV(text) {
-        const rows = [];
-        let row = [];
-        let field = '';
-        let inQuotes = false;
+    async function parseCSVStream(stream, encoding = "UTF-8", onRow) {
+      console.log('Parsing CSV stream...');
+      let row = [];
+      let field = '';
+      let inQuotes = false;
+      let buffer = '';
+
+      const decoder = new TextDecoder(encoding);
+      const reader = stream.getReader();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
         let i = 0;
-
-        while (i < text.length) {
-            const char = text[i];
-
-            if (char === '"') {
-                if (inQuotes && text[i + 1] === '"') {
-                    field += '"';
-                    i++;
-                } else {
-                    inQuotes = !inQuotes;
-                }
-            } else if (char === ',' && !inQuotes) {
-                row.push(field);
-                field = '';
-            } else if ((char === '\r' || char === '\n') && !inQuotes) {
-                row.push(field);
-                field = '';
-                rows.push(row);
-                row = [];
-                if (char === '\r' && text[i+1] === '\n') {
-                  i++;
-                }
+        while (i < buffer.length) {
+          const char = buffer[i];
+          if (char === '"') {
+            if (inQuotes && buffer[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
             }
-            else {
-                field += char;
-            }
-            i++;
-        }
-        if(field.length > 0){
+          } else if (char === ',' && !inQuotes) {
             row.push(field);
+            field = '';
+          } else if ((char === '\r' || char === '\n') && !inQuotes) {
+            row.push(field);
+            field = '';
+            if (row.length > 0) {
+              await onRow(row);
+              row = [];
+            }
+            if (char === '\r' && buffer[i + 1] === '\n') i++;
+          } else {
+            field += char;
+          }
+          i++;
         }
 
-        if(row.length > 0){
-            rows.push(row);
-        }
-        return rows;
-  }
+        buffer = buffer.slice(i);
+      }
 
-
-    async function readCSVText(file, encoding = "UTF-8") {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onprogress = (event) => { // プログレスバー更新
-          if (event.lengthComputable) {
-            const percentComplete = (event.loaded / event.total) * 100;
-            progressBar.style.width = percentComplete + '%';
-          }
-        };
-
-        reader.onload = (event) => {
-          try {
-            const parsed = parseCSV(event.target.result);
-            resolve(parsed);
-          } catch (error) {
-            reject(file.name);
-          }
-        };
-        reader.onerror = () => reject(file.name);
-        reader.readAsText(file, encoding);
-      });
+      if (field.length > 0) row.push(field);
+      if (row.length > 0) await onRow(row);
+      console.log('CSV stream parsing completed');
     }
 
-  // 結合ボタン、プレビュー更新ボタンクリック時の処理
-  mergeButton.addEventListener('click', loadAndPreview);
-  reloadPreviewButton.addEventListener('click', loadAndPreview);
+    async function processCSVStream(file, encoding = "UTF-8", onRow) {
+      console.log('Reading file stream:', file.name);
+      try {
+        const stream = file.stream();
+        await parseCSVStream(stream, encoding, onRow);
+      } catch (error) {
+        console.error('Error reading file stream:', file.name, error);
+        throw file.name;
+      }
+    }
 
-  async function loadAndPreview() {
+    function escapeCSVField(field) {
+      if (typeof field !== 'string') return field;
+      if (/[",\n]/.test(field)) {
+        return '"' + field.replace(/"/g, '""') + '"';
+      }
+      return field;
+    }
+
+    mergeButton.addEventListener('click', loadAndPreview);
+    reloadPreviewButton.addEventListener('click', loadAndPreview);
+
+    async function loadAndPreview() {
       if (allFiles.length === 0) {
         alert('ファイルがありません。 | No files selected.');
         return;
       }
 
-      progressContainer.classList.remove('hidden'); // プログレスバー表示
-      progressBar.style.width = '0%'; // プログレスバー初期化
+      console.log('Starting loadAndPreview with', allFiles.length, 'files');
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '0%';
 
-      const combinedData = [];
       allHeaders.clear();
-
-      const readPromises = [];
-      const selectedEncoding = encodingSelect.value;
+      outputBlobs = [];
+      const errorFiles = [];
+      let processedFiles = 0;
+      let previewRows = [];
+      const maxPreviewFiles = 5;
 
       for (const file of allFiles) {
-        readPromises.push(readCSVText(file, selectedEncoding));
-      }
-
-      const parsedContents = await Promise.allSettled(readPromises);
-      const errorFiles = [];
-
-      for(const result of parsedContents) {
-        if(result.status === "fulfilled") {
-            const lines = result.value;
-
-            if (lines.length === 0) continue;
-
-            const headerRow = lines[0];
-            headerRow.forEach(header => allHeaders.add(header));
-
-            const fileNameBase = allFiles[parsedContents.indexOf(result)].name.replace(/\.csv$/, '');
-            const rows = lines.slice(1);
-
-            for (const row of rows) {
-              const rowData = {};
-              rowData['file'] = fileNameBase;
-              for (let i = 0; i < headerRow.length; i++) {
-                rowData[headerRow[i]] = row[i] || '';
+        try {
+          const stream = file.stream();
+          const firstLine = await new Promise((resolve) => {
+            let firstRow = null;
+            parseCSVStream(stream, encodingSelect.value, (row) => {
+              if (!firstRow) {
+                firstRow = row;
+                resolve(row);
               }
-              combinedData.push(rowData);
-            }
-        } else {
-          errorFiles.push(result.reason);
+              return Promise.resolve();
+            });
+          });
+
+          firstLine.forEach(header => allHeaders.add(header));
+        } catch (error) {
+          errorFiles.push(file.name);
+          console.error('Error collecting headers from file:', file.name, error);
         }
       }
 
-        if (errorFiles.length > 0) {
-            // プログレスバーを非表示
-            progressContainer.classList.add('hidden');
-            alert('以下のファイルの読み込み/パースに失敗しました:\n' + errorFiles.join('\n') + '\n\n'+
-                  'Failed to load/parse the following files:\n' + errorFiles.join('\n')
-            );
-            return; // 処理中断
-        }
+      if (errorFiles.length > 0) {
+        progressContainer.classList.add('hidden');
+        alert('以下のファイルのヘッダー読み込みに失敗しました:\n' + errorFiles.join('\n') + '\n\n' +
+              'Failed to read headers from the following files:\n' + errorFiles.join('\n'));
+        return;
+      }
 
       allHeaders.add('file');
       const finalHeaderRow = Array.from(allHeaders);
       const sortedHeaderRow = ['file'].concat(finalHeaderRow.filter(h => h !== 'file'));
 
-      filledData = [sortedHeaderRow].concat(combinedData.map(rowData => {
-        return sortedHeaderRow.map(header => rowData[header] || '');
-      }));
+      const headerCSV = sortedHeaderRow.map(field => escapeCSVField(field)).join(',') + '\n';
+      outputBlobs.push(headerCSV);
+
+      for (let fileIndex = 0; fileIndex < allFiles.length; fileIndex++) {
+        const file = allFiles[fileIndex];
+        try {
+          const fileNameBase = file.name.replace(/\.csv$/, '');
+          let rowCount = 0;
+
+          await processCSVStream(file, encodingSelect.value, async (row) => {
+            rowCount++;
+            if (rowCount === 1) return;
+
+            const rowData = { 'file': fileNameBase };
+            for (let i = 0; i < row.length; i++) {
+              rowData[sortedHeaderRow[i + 1]] = row[i] || '';
+            }
+
+            const csvRow = sortedHeaderRow.map(header => escapeCSVField(rowData[header] || '')).join(',') + '\n';
+            outputBlobs.push(csvRow);
+
+            if (fileIndex < maxPreviewFiles && previewRows.length < 50) {
+              previewRows.push(sortedHeaderRow.map(header => rowData[header] || ''));
+            }
+
+            if (outputBlobs.length > 10000) {
+              const combinedBlob = new Blob(outputBlobs, { type: 'text/csv;charset=utf-8' });
+              outputBlobs = [combinedBlob];
+              await new Promise(resolve => setTimeout(resolve, 10));
+            }
+          });
+
+          console.log('Processed file:', file.name, 'with', rowCount, 'lines');
+          processedFiles++;
+          const progress = (processedFiles / allFiles.length) * 100;
+          progressBar.style.width = `${progress}%`;
+          console.log('Progress:', progress + '%');
+
+          await new Promise(resolve => setTimeout(resolve, 10));
+        } catch (error) {
+          errorFiles.push(file.name);
+          console.error('Error processing file:', file.name, error);
+          if (error.name === 'QuotaExceededError') {
+            alert('リソース制限に達しました。ファイル数を減らして再度お試しください。 | Resource limit reached. Please reduce the number of files and try again.');
+            progressContainer.classList.add('hidden');
+            return;
+          }
+        }
+      }
+
+      if (errorFiles.length > 0) {
+        progressContainer.classList.add('hidden');
+        alert('以下のファイルの読み込み/パースに失敗しました:\n' + errorFiles.join('\n') + '\n\n' +
+              'Failed to load/parse the following files:\n' + errorFiles.join('\n'));
+        return;
+      }
+
+      filledData = [sortedHeaderRow, ...previewRows];
+      console.log('Preview data prepared, total rows:', filledData.length);
 
       previewTable.innerHTML = '';
       displayPreview(filledData);
@@ -590,89 +420,82 @@
       isSorted = false;
       toggleSortButton.textContent = "ソートを反映 | Apply Sort";
 
-       // プログレスバーを一旦100%にしてから、少し遅延させて非表示にする
-       progressBar.style.width = '100%';
-        setTimeout(() => {
-          progressContainer.classList.add('hidden');
-        }, 300); // 300ミリ秒後に非表示
+      progressBar.style.width = '100%';
+      setTimeout(() => {
+        progressContainer.classList.add('hidden');
+        console.log('Processing completed');
+      }, 300);
     }
 
-
-  //ソート用の選択肢
-  function populateSortColumnSelect(headers) {
-    sortColumnSelect.innerHTML = '';
-    for (const header of headers) {
-      const option = document.createElement('option');
-      option.value = header;
-      option.textContent = header;
-      sortColumnSelect.appendChild(option);
+    function populateSortColumnSelect(headers) {
+      sortColumnSelect.innerHTML = '';
+      for (const header of headers) {
+        const option = document.createElement('option');
+        option.value = header;
+        option.textContent = header;
+        sortColumnSelect.appendChild(option);
+      }
     }
-  }
 
-
-  function displayPreview(data) {
-
-
-    const headerRow = document.createElement('tr');
-    for (const header of data[0]) {
-      const th = document.createElement('th');
-      th.textContent = header;
-      th.addEventListener('click', () => {
+    function displayPreview(data) {
+      console.log('Displaying preview, rows:', data.length);
+      const headerRow = document.createElement('tr');
+      for (const header of data[0]) {
+        const th = document.createElement('th');
+        th.textContent = header;
+        th.addEventListener('click', () => {
           const currentOrder = sortColumnSelect.value === header ? sortOrderSelect.value : 'asc';
           sortOrderSelect.value = currentOrder === 'asc' ? 'desc' : 'asc';
           sortColumnSelect.value = header;
           sortData();
+        });
+        headerRow.appendChild(th);
+      }
+      previewTable.appendChild(headerRow);
 
-      });
-      headerRow.appendChild(th);
-    }
-    previewTable.appendChild(headerRow);
+      const previewType = previewTypeSelect.value;
+      const previewRows = Math.min(parseInt(previewRowsInput.value, 10), 50);
 
-    // プレビューオプションの値を取得
-    const previewType = previewTypeSelect.value;
-    const previewRows = parseInt(previewRowsInput.value, 10);
+      let previewData = [];
+      const numRows = data.length - 1;
 
-    let previewData = [];
-    const numRows = data.length - 1; // ヘッダーを除いた行数
+      if (previewType === 'all' || numRows <= previewRows) {
+        previewData.push(...data.slice(1));
+      } else if (previewType === 'head') {
+        previewData.push(...data.slice(1, Math.min(previewRows + 1, data.length)));
+      } else if (previewType === 'tail') {
+        previewData.push(...data.slice(Math.max(data.length - previewRows, 1)));
+      }
 
-    if (previewType === 'all' || numRows <= 10) {
-        previewData.push(...data.slice(1)); // ヘッダを除くすべて
-    } else if (previewType === 'head') {
-        previewData.push(...data.slice(1, Math.min(previewRows + 1, data.length))); //+1はヘッダの分
-    } else if (previewType === 'tail') {
-        previewData.push(...data.slice(Math.max(data.length - previewRows, 1))); // data.length - previewRows が0以下にならないように
-    }
-
-     // 省略記号(...)の追加
-     if (previewType !== 'all' && numRows > previewRows && previewRows > 0) {
-        if (previewType === 'head' && numRows > previewRows) {
-            const omittedRow = createOmittedRow(data[0].length);
-            previewData.push(omittedRow);
-        } else if (previewType === 'tail' && numRows > previewRows) {
-            const omittedRow = createOmittedRow(data[0].length);
-            previewData.unshift(omittedRow); // 配列の先頭に追加
-        }
-     }
-
-    for (const rowData of previewData) {
-      const row = document.createElement('tr');
-      if (rowData.cells && rowData.cells[0].classList.contains('omitted-row')) {
-         row.appendChild(rowData.cells[0]);
-      }else{
-        for (const cell of rowData) {
-          const td = document.createElement('td');
-          td.textContent = cell;
-          row.appendChild(td);
+      if (previewType !== 'all' && numRows > previewRows) {
+        if (previewType === 'head') {
+          const omittedRow = createOmittedRow(data[0].length);
+          previewData.push(omittedRow);
+        } else if (previewType === 'tail') {
+          const omittedRow = createOmittedRow(data[0].length);
+          previewData.unshift(omittedRow);
         }
       }
 
-      previewTable.appendChild(row);
+      for (const rowData of previewData) {
+        const row = document.createElement('tr');
+        if (rowData.cells && rowData.cells[0].classList.contains('omitted-row')) {
+          row.appendChild(rowData.cells[0]);
+        } else {
+          for (const cell of rowData) {
+            const td = document.createElement('td');
+            td.textContent = cell;
+            row.appendChild(td);
+          }
+        }
+        previewTable.appendChild(row);
+      }
+
+      previewContainer.classList.remove('hidden');
+      console.log('Preview displayed');
     }
 
-    previewContainer.classList.remove('hidden');
-  }
-
-  function createOmittedRow(colSpan) {
+    function createOmittedRow(colSpan) {
       const omittedRow = document.createElement('tr');
       const omittedCell = document.createElement('td');
       omittedCell.colSpan = colSpan;
@@ -682,113 +505,72 @@
       return omittedRow;
     }
 
-  // ソート処理
-  sortButton.addEventListener('click', sortData);
+    sortButton.addEventListener('click', sortData);
 
-  function sortData() {
-    const columnIndex = filledData[0].indexOf(sortColumnSelect.value);
-    const order = sortOrderSelect.value;
+    function sortData() {
+      const columnIndex = filledData[0].indexOf(sortColumnSelect.value);
+      const order = sortOrderSelect.value;
 
-    if (columnIndex === -1) return;
+      if (columnIndex === -1) return;
 
-    // filledData をディープコピー
-    sortedData = filledData.map(row => [...row]);
-
-    // ヘッダー行を除いてソート
-    const header = sortedData.shift();
-    sortedData.sort((a, b) => {
-      const valA = a[columnIndex] === "" ? null : a[columnIndex];
-      const valB = b[columnIndex] === "" ? null : b[columnIndex];
-
+      sortedData = filledData.map(row => [...row]);
+      const header = sortedData.shift();
+      sortedData.sort((a, b) => {
+        const valA = a[columnIndex] === "" ? null : a[columnIndex];
+        const valB = b[columnIndex] === "" ? null : b[columnIndex];
         if (valA === null && valB === null) return 0;
         if (valA === null) return order === 'asc' ? 1 : -1;
         if (valB === null) return order === 'asc' ? -1 : 1;
+        if (!isNaN(parseFloat(valA)) && !isNaN(parseFloat(valB))) {
+          return order === 'asc' ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
+        } else {
+          return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+      });
+      sortedData.unshift(header);
 
-      if (!isNaN(parseFloat(valA)) && !isNaN(parseFloat(valB))) {
-        return order === 'asc' ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
+      displayPreview(sortedData);
+      isSorted = true;
+      toggleSortButton.textContent = "ソートを反映 | Apply Sort";
+    }
+
+    toggleSortButton.addEventListener('click', () => {
+      if (toggleSortButton.textContent === 'ソートを反映 | Apply Sort') {
+        toggleSortButton.textContent = 'ソートを反映しない | Do Not Apply Sort';
       } else {
-        return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        toggleSortButton.textContent = 'ソートを反映 | Apply Sort';
       }
     });
-    sortedData.unshift(header);
 
-    displayPreview(sortedData);
-    isSorted = true;
-    toggleSortButton.textContent = "ソートを反映 | Apply Sort";
-  }
+    downloadButton.addEventListener('click', () => {
+      const finalBlob = new Blob(outputBlobs, { type: 'text/csv;charset=utf-8' });
+      const filename = baseFileName + "_combined.csv";
+      downloadCSV(finalBlob, filename);
+      outputBlobs = [];
+    });
 
-  // ソート反映/非反映ボタン
-  toggleSortButton.addEventListener('click', () => {
-    if (toggleSortButton.textContent === 'ソートを反映 | Apply Sort') {
-      toggleSortButton.textContent = 'ソートを反映しない | Do Not Apply Sort';
-    } else {
-      toggleSortButton.textContent = 'ソートを反映 | Apply Sort';
-    }
-  });
-
-
-  function escapeCSVField(field) {
-    if (typeof field !== 'string') {
-      return field;
-    }
-    if (/[,"\n]/.test(field)) {
-      return '"' + field.replace(/"/g, '""') + '"';
-    }
-    return field;
-  }
-
-  downloadButton.addEventListener('click', () => {
-    let dataToDownload = filledData; // デフォルトはソートなし
-
-    // 「ソートを反映」ボタンが押されている場合
-    if (toggleSortButton.textContent === 'ソートを反映しない | Do Not Apply Sort') {
-        dataToDownload = sortedData;
-    }
-
-    const csvContent = dataToDownload.map(row => row.map(field => escapeCSVField(field)).join(',')).join('\n');
-    const filename = baseFileName + "_combined.csv";
-    downloadCSV(csvContent, filename);
-  });
-
-  function downloadCSV(content, filename) {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-
-    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-    const blobWithBOM = new Blob([bom, content], {type: "text/csv;charset=utf-8"});
-
-    if (navigator.msSaveBlob) {
-      navigator.msSaveBlob(blobWithBOM, filename);
-    } else {
-      const url = URL.createObjectURL(blobWithBOM);
-      link.setAttribute('href', url);
+    function downloadCSV(blob, filename) {
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      const blobWithBOM = new Blob([bom, blob], { type: "text/csv;charset=utf-8" });
+      const link = document.createElement('a');
+      link.setAttribute('href', URL.createObjectURL(blobWithBOM));
       link.setAttribute('download', filename);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
-  }
 
-  // プレビューオプションの変更を検知
-  previewTypeSelect.addEventListener('change', () => {
-      if(filledData.length > 0){
-        displayPreview(filledData);
-      }
+    previewTypeSelect.addEventListener('change', () => {
+      if (filledData.length > 0) displayPreview(filledData);
+    });
+    previewRowsInput.addEventListener('change', () => {
+      if (filledData.length > 0) displayPreview(filledData);
+    });
 
-  });
-  previewRowsInput.addEventListener('change', () => {
-    if(filledData.length > 0){
-        displayPreview(filledData);
-    }
-  });
-  //数値のみ
-  previewRowsInput.addEventListener("input", (event) => {
-        // 入力値から数字以外の文字を取り除く
-        event.target.value = event.target.value.replace(/[^0-9]/g, '');
-  });
-
-</script>
-
+    previewRowsInput.addEventListener("input", (event) => {
+      event.target.value = event.target.value.replace(/[^0-9]/g, '');
+    });
+  </script>
 </body>
 </html>
